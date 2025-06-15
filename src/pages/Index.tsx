@@ -23,6 +23,9 @@ const Index = () => {
   const [videos, setVideos] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState<string | null>(null);
+  const [region, setRegion] = useState<string>(DEFAULT_REGION);
+  const [sortOrder, setSortOrder] = useState<string>(DEFAULT_SORT);
+  const [pendingFilter, setPendingFilter] = useState<boolean>(false);
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
 
