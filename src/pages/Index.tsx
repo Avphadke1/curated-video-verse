@@ -1,127 +1,48 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { supabase, SUPABASE_PUBLISHABLE_KEY } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import VideoSearchBar from "@/components/VideoSearchBar";
 import VideoFilterBar from "@/components/VideoFilterBar";
 import VideoResultList from "@/components/VideoResultList";
-
-// Helper: Get/Set API Key in localStorage
-function getYoutubeApiKey(): string | null {
-  return localStorage.getItem("youtube_api_key");
-}
-
-function setYoutubeApiKey(key: string) {
-  localStorage.setItem("youtube_api_key", key);
-}
+import { toast } from "@/hooks/use-toast";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { useVideoSearch } from "@/hooks/useVideoSearch";
 
 const DEFAULT_REGION = "US";
 const DEFAULT_SORT = "relevance";
 
+const regionMap: Record<string, string> = {
+  US: "United States",
+  IN: "India",
+  GB: "United Kingdom",
+  JP: "Japan",
+  DE: "Germany",
+  FR: "France",
+  RU: "Russia",
+  BR: "Brazil",
+  KR: "South Korea",
+  CA: "Canada",
+};
+const sortMap: Record<string, string> = {
+  relevance: "Relevance",
+  date: "Upload Date",
+  viewCount: "View Count",
+};
+
 const Index = () => {
-  const [videos, setVideos] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  // Auth/session managed in custom hook
+  const { user, session } = useSupabaseAuth({ requireAuth: true });
+
+  // Video API logic in its own hook
+  const { videos, loading, fetchVideos, setVideos } = useVideoSearch();
+
+  // Internal state for filters/search
   const [query, setQuery] = useState<string | null>(null);
   const [region, setRegion] = useState<string>(DEFAULT_REGION);
   const [sortOrder, setSortOrder] = useState<string>(DEFAULT_SORT);
   const [pendingFilter, setPendingFilter] = useState<boolean>(false);
-  const [user, setUser] = useState<any>(null);
-  const [session, setSession] = useState<any>(null);
-  const navigate = useNavigate();
-
-  // On mount: check authentication
-  useEffect(() => {
-    // Set up auth listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (!session) navigate("/auth");
-    });
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (!session) navigate("/auth");
-    });
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  // Remove API key from UI and localStorage (now handled on backend)
-  // API calls will now use edge function endpoint
-  const fetchVideos = async ({
-    term, regionCode, order,
-  }: {
-    term: string;
-    regionCode: string;
-    order: string;
-  }) => {
-    setLoading(true);
-    try {
-      // Ensure we have an access token
-      const accessToken = session?.access_token;
-      if (!accessToken) {
-        toast({ title: "Not logged in", description: "You must be logged in to search videos.", variant: "destructive" });
-        setLoading(false);
-        return [];
-      }
-      // Call the edge function with Authorization header
-      const res = await fetch(
-        "https://goucqtoqpxkuhkyjddpg.supabase.co/functions/v1/youtube-proxy",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "apikey": SUPABASE_PUBLISHABLE_KEY,
-            "Authorization": `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ term, regionCode, order })
-        }
-      );
-
-      let data: any = null;
-      const contentType = res.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
-        try {
-          data = await res.json();
-        } catch {
-          data = null;
-        }
-      }
-      console.log("EdgeFunction fetch, status:", res.status);
-      console.log("Received data from edge function:", data);
-
-      if (!res.ok || !data) {
-        toast({ title: "API Error", description: data?.error || "Failed to fetch videos or invalid response.", variant: "destructive" });
-        setVideos([]);
-        setLoading(false);
-        return [];
-      }
-      if (data.error) {
-        toast({ title: "API Error", description: data.error, variant: "destructive" });
-        setVideos([]);
-        setLoading(false);
-        return [];
-      }
-
-      if (!Array.isArray(data.videos)) {
-        toast({ title: "Unexpected response", description: "Server did not return a videos array.", variant: "destructive" });
-        setVideos([]);
-        setLoading(false);
-        return [];
-      }
-
-      setVideos(data.videos);
-      console.log("Final videos set in state:", data.videos);
-      setLoading(false);
-      return data.videos;
-    } catch (e: any) {
-      toast({ title: "Network Error", description: e.message, variant: "destructive" });
-      setVideos([]);
-      setLoading(false);
-      return [];
-    }
-  };
 
   const handleSearch = async (searchTerm: string) => {
     setQuery(searchTerm);
@@ -129,17 +50,18 @@ const Index = () => {
       term: searchTerm,
       regionCode: region,
       order: sortOrder,
+      accessToken: session?.access_token || "",
     });
     setPendingFilter(false);
   };
 
-  // Handle user clicks "Apply Filters"
   const handleApplyFilters = async () => {
     if (query) {
       await fetchVideos({
         term: query,
         regionCode: region,
         order: sortOrder,
+        accessToken: session?.access_token || "",
       });
       setPendingFilter(false);
     }
@@ -152,25 +74,6 @@ const Index = () => {
   const handleRegionChange = (newRegion: string) => {
     setRegion(newRegion);
     setPendingFilter(true);
-  };
-
-  // For display above grid for debugging
-  const regionMap: Record<string, string> = {
-    US: "United States",
-    IN: "India",
-    GB: "United Kingdom",
-    JP: "Japan",
-    DE: "Germany",
-    FR: "France",
-    RU: "Russia",
-    BR: "Brazil",
-    KR: "South Korea",
-    CA: "Canada",
-  };
-  const sortMap: Record<string, string> = {
-    relevance: "Relevance",
-    date: "Upload Date",
-    viewCount: "View Count",
   };
 
   return (
