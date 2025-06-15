@@ -54,15 +54,18 @@ const Index = () => {
   }) => {
     setLoading(true);
     try {
-      // Add the Supabase anon key as 'apikey' header
-      const res = await fetch(`/functions/v1/youtube-proxy`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": SUPABASE_PUBLISHABLE_KEY,
-        },
-        body: JSON.stringify({ term, regionCode, order })
-      });
+      // *** FIX: Always call the edge function on the Supabase domain ***
+      const res = await fetch(
+        "https://goucqtoqpxkuhkyjddpg.supabase.co/functions/v1/youtube-proxy",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({ term, regionCode, order })
+        }
+      );
 
       let data: any = null;
       const contentType = res.headers.get("content-type");
