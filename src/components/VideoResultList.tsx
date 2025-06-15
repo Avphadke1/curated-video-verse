@@ -5,9 +5,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface VideoResultListProps {
   videos: Array<any>;
   loading?: boolean;
+  query?: string;
 }
 
-const VideoResultList: React.FC<VideoResultListProps> = ({ videos, loading }) => {
+const VideoResultList: React.FC<VideoResultListProps> = ({ videos, loading, query }) => {
   if (loading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6 mt-8 px-1">
@@ -20,6 +21,10 @@ const VideoResultList: React.FC<VideoResultListProps> = ({ videos, loading }) =>
         ))}
       </div>
     );
+  }
+
+  if (!videos.length && query) {
+    return <div className="text-center text-muted-foreground pt-12">No videos found for your search.</div>;
   }
 
   if (!videos.length) {
@@ -60,3 +65,4 @@ const VideoResultList: React.FC<VideoResultListProps> = ({ videos, loading }) =>
 };
 
 export default VideoResultList;
+

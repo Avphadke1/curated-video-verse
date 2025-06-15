@@ -69,6 +69,8 @@ const Index = () => {
           data = null;
         }
       }
+      console.log("EdgeFunction fetch, status:", res.status);
+      console.log("Received data from edge function:", data);
 
       if (!res.ok || !data) {
         toast({ title: "API Error", description: data?.error || "Failed to fetch videos or invalid response.", variant: "destructive" });
@@ -82,7 +84,16 @@ const Index = () => {
         setLoading(false);
         return [];
       }
+
+      if (!Array.isArray(data.videos)) {
+        toast({ title: "Unexpected response", description: "Server did not return a videos array.", variant: "destructive" });
+        setVideos([]);
+        setLoading(false);
+        return [];
+      }
+
       setVideos(data.videos);
+      console.log("Final videos set in state:", data.videos);
       setLoading(false);
       return data.videos;
     } catch (e: any) {
@@ -200,7 +211,11 @@ const Index = () => {
                 </span>
               </div>
             )}
-            <VideoResultList videos={videos} loading={loading} />
+            <VideoResultList
+              videos={videos}
+              loading={loading}
+              query={query}
+            />
           </div>
         </>
       )}
