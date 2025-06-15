@@ -59,9 +59,25 @@ const Index = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ term, regionCode, order })
       });
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        toast({ title: "API Error", description: data.error || "Failed to fetch videos.", variant: "destructive" });
+
+      let data: any = null;
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        try {
+          data = await res.json();
+        } catch {
+          data = null;
+        }
+      }
+
+      if (!res.ok || !data) {
+        toast({ title: "API Error", description: data?.error || "Failed to fetch videos or invalid response.", variant: "destructive" });
+        setVideos([]);
+        setLoading(false);
+        return [];
+      }
+      if (data.error) {
+        toast({ title: "API Error", description: data.error, variant: "destructive" });
         setVideos([]);
         setLoading(false);
         return [];
