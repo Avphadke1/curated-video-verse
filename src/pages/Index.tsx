@@ -27,16 +27,20 @@ const Index = () => {
   const [sortOrder, setSortOrder] = useState<string>(DEFAULT_SORT);
   const [pendingFilter, setPendingFilter] = useState<boolean>(false);
   const [user, setUser] = useState<any>(null);
+  const [session, setSession] = useState<any>(null);
   const navigate = useNavigate();
 
   // On mount: check authentication
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Set up auth listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setSession(session);
       setUser(session?.user ?? null);
       if (!session) navigate("/auth");
     });
-    // Subscribe to auth-changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
       setUser(session?.user ?? null);
       if (!session) navigate("/auth");
     });
@@ -54,7 +58,14 @@ const Index = () => {
   }) => {
     setLoading(true);
     try {
-      // *** FIX: Always call the edge function on the Supabase domain ***
+      // Ensure we have an access token
+      const accessToken = session?.access_token;
+      if (!accessToken) {
+        toast({ title: "Not logged in", description: "You must be logged in to search videos.", variant: "destructive" });
+        setLoading(false);
+        return [];
+      }
+      // Call the edge function with Authorization header
       const res = await fetch(
         "https://goucqtoqpxkuhkyjddpg.supabase.co/functions/v1/youtube-proxy",
         {
@@ -62,6 +73,7 @@ const Index = () => {
           headers: {
             "Content-Type": "application/json",
             "apikey": SUPABASE_PUBLISHABLE_KEY,
+            "Authorization": `Bearer ${accessToken}`,
           },
           body: JSON.stringify({ term, regionCode, order })
         }
