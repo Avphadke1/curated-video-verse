@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, SUPABASE_PUBLISHABLE_KEY } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import VideoSearchBar from "@/components/VideoSearchBar";
@@ -59,7 +59,7 @@ const Index = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "apikey": supabase.options.auth?.anonKey || "",
+          "apikey": SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify({ term, regionCode, order })
       });
