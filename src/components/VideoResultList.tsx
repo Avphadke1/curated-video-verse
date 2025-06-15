@@ -10,12 +10,12 @@ interface VideoResultListProps {
 const VideoResultList: React.FC<VideoResultListProps> = ({ videos, loading }) => {
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6 mt-8 px-1">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="space-y-2">
-            <Skeleton className="h-48 w-full" />
-            <Skeleton className="h-5 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-48 w-full rounded" />
+            <Skeleton className="h-5 w-3/4 rounded" />
+            <Skeleton className="h-4 w-1/2 rounded" />
           </div>
         ))}
       </div>
@@ -27,12 +27,12 @@ const VideoResultList: React.FC<VideoResultListProps> = ({ videos, loading }) =>
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6 mt-8 px-1">
       {videos.map((video, i) => (
         <a
           key={video.videoId || i}
           href={`https://www.youtube.com/watch?v=${video.videoId}`}
-          className="rounded-lg shadow bg-card p-4 hover:shadow-lg transition-shadow block"
+          className="rounded-lg shadow bg-card p-3 sm:p-4 hover:shadow-lg transition-shadow block focus:ring-2 focus:ring-primary ring-offset-2 outline-none"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -42,6 +42,7 @@ const VideoResultList: React.FC<VideoResultListProps> = ({ videos, loading }) =>
                 src={video.thumbnail}
                 alt={video.title}
                 className="object-cover w-full h-full"
+                loading="lazy"
               />
             ) : (
               <span className="text-xs text-muted-foreground">No Thumbnail</span>
