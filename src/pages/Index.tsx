@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import VideoSearchBar from "@/components/VideoSearchBar";
 import VideoFilterBar from "@/components/VideoFilterBar";
@@ -42,7 +41,7 @@ const Index = () => {
       return [];
     }
     try {
-      const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=9&q=${encodeURIComponent(
+      const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=25&q=${encodeURIComponent(
         term
       )}&order=${order}&regionCode=${regionCode}&key=${apiKey}`;
       const searchRes = await fetch(searchUrl);
@@ -119,6 +118,25 @@ const Index = () => {
     setPendingFilter(true);
   };
 
+  // For display above grid for debugging
+  const regionMap: Record<string, string> = {
+    US: "United States",
+    IN: "India",
+    GB: "United Kingdom",
+    JP: "Japan",
+    DE: "Germany",
+    FR: "France",
+    RU: "Russia",
+    BR: "Brazil",
+    KR: "South Korea",
+    CA: "Canada",
+  };
+  const sortMap: Record<string, string> = {
+    relevance: "Relevance",
+    date: "Upload Date",
+    viewCount: "View Count",
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center bg-background px-2">
       <div className="w-full max-w-2xl text-center mt-16">
@@ -183,6 +201,18 @@ const Index = () => {
         />
       )}
       <div className="w-full max-w-4xl mx-auto">
+        {/* Helper & debug bar */}
+        {!showKeyInput && query && (
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between px-1 py-3">
+            <span className="text-xs text-muted-foreground mb-2 md:mb-0">
+              <strong>Region:</strong> {regionMap[region] || region} &nbsp;|&nbsp; 
+              <strong>Sort:</strong> {sortMap[sortOrder] || sortOrder}
+            </span>
+            <span className="text-xs text-muted-foreground text-right md:ml-4">
+              <span className="hidden sm:inline">Tip:</span> Try searching for topics like <span className="font-semibold">"music charts"</span>, <span className="font-semibold">"football news"</span>, or <span className="font-semibold">"election 2024"</span> and switching region/sort filters!
+            </span>
+          </div>
+        )}
         <VideoResultList videos={videos} loading={loading} />
       </div>
     </div>
