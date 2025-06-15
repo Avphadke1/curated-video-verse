@@ -54,9 +54,13 @@ const Index = () => {
   }) => {
     setLoading(true);
     try {
+      // Add the Supabase anon key as 'apikey' header
       const res = await fetch(`/functions/v1/youtube-proxy`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": supabase.options.auth?.anonKey || "",
+        },
         body: JSON.stringify({ term, regionCode, order })
       });
 
