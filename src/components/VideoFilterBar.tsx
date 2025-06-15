@@ -41,7 +41,7 @@ const VideoFilterBar: React.FC<VideoFilterBarProps> = ({
 }) => {
   return (
     <form
-      className="w-full max-w-3xl mx-auto flex flex-col md:flex-row gap-2 mb-3 md:mb-0 items-center justify-between"
+      className="w-full max-w-3xl mx-auto flex flex-col md:flex-row gap-2 mb-3 md:mb-0 items-center justify-between animate-fade-in transition-all"
       onSubmit={e => {
         e.preventDefault();
         onSubmit();
@@ -49,10 +49,10 @@ const VideoFilterBar: React.FC<VideoFilterBarProps> = ({
     >
       <div className="flex gap-2 w-full">
         <Select value={sortOrder} onValueChange={onSortOrderChange}>
-          <SelectTrigger className="w-36">
+          <SelectTrigger className="w-36 hover-scale focus:scale-105 transition-all duration-100">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-popover z-50 animate-fade-in">
             {sortOptions.map(opt => (
               <SelectItem key={opt.value} value={opt.value}>
                 {opt.label}
@@ -61,10 +61,10 @@ const VideoFilterBar: React.FC<VideoFilterBarProps> = ({
           </SelectContent>
         </Select>
         <Select value={region} onValueChange={onRegionChange}>
-          <SelectTrigger className="w-36">
+          <SelectTrigger className="w-36 hover-scale focus:scale-105 transition-all duration-100">
             <SelectValue placeholder="Region" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-popover z-50 animate-fade-in">
             {regionOptions.map(opt => (
               <SelectItem key={opt.code} value={opt.code}>
                 {opt.name}
@@ -75,11 +75,20 @@ const VideoFilterBar: React.FC<VideoFilterBarProps> = ({
       </div>
       <Button
         type="submit"
-        className="w-full md:w-auto mt-2 md:mt-0"
+        className="w-full md:w-auto mt-2 md:mt-0 pulse animate-scale-in"
         disabled={loading}
         variant="outline"
       >
-        {loading ? "Loading..." : "Apply Filters"}
+        {loading ? (
+          <span className="flex items-center gap-2 animate-pulse">
+            <svg className="animate-spin h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+            </svg>
+            Loading...
+          </span>
+        ) : "Apply Filters"}
       </Button>
     </form>
   );

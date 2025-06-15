@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -78,11 +77,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-background px-2 animate-fade-in">
-      <div className="w-full max-w-2xl text-center mt-16">
-        <h1 className="text-3xl md:text-4xl font-extrabold mb-2 animate-scale-in">
+      <div className="w-full max-w-2xl text-center mt-16 transition-all duration-500 animate-fade-in">
+        <h1 className="text-3xl md:text-4xl font-extrabold mb-2 animate-scale-in origin-top">
           Curated YouTube Video Discovery
         </h1>
-        <p className="text-lg text-muted-foreground mb-4 animate-fade-in">
+        <p className="text-lg text-muted-foreground mb-4 animate-fade-in delay-150">
           Find the most authentic and unbiased videos on your favorite topics.
         </p>
         <div className="flex flex-col items-center gap-2 mb-2">
@@ -95,12 +94,12 @@ const Index = () => {
               }}
               size="sm"
               variant="ghost"
-              className="mt-2"
+              className="mt-2 animate-fade-in"
             >
               Log Out
             </Button>
           ) : (
-            <Link to="/auth" className="text-xs underline text-blue-600 hover:text-blue-700 mt-3">
+            <Link to="/auth" className="text-xs underline text-blue-600 hover:text-blue-700 mt-3 animate-fade-in delay-200">
               Login / Signup
             </Link>
           )}
@@ -108,26 +107,26 @@ const Index = () => {
       </div>
       {!user ? null : (
         <>
-          {/* Filters: visible only if user is logged in and after a search */}
           {query && (
-            <VideoFilterBar
-              sortOrder={sortOrder}
-              onSortOrderChange={handleSortOrderChange}
-              region={region}
-              onRegionChange={handleRegionChange}
-              onSubmit={handleApplyFilters}
-              loading={loading}
-            />
+            <div className="w-full transition-all duration-300 animate-fade-in">
+              <VideoFilterBar
+                sortOrder={sortOrder}
+                onSortOrderChange={handleSortOrderChange}
+                region={region}
+                onRegionChange={handleRegionChange}
+                onSubmit={handleApplyFilters}
+                loading={loading}
+              />
+            </div>
           )}
           <div className="w-full max-w-4xl mx-auto">
-            {/* Helper & debug bar */}
             {query && (
               <div className="flex flex-col md:flex-row md:items-center md:justify-between px-1 py-3 animate-fade-in">
-                <span className="text-xs text-muted-foreground mb-2 md:mb-0">
+                <span className="text-xs text-muted-foreground mb-2 md:mb-0 transition-opacity duration-300">
                   <strong>Region:</strong> {regionMap[region] || region} &nbsp;|&nbsp;
                   <strong>Sort:</strong> {sortMap[sortOrder] || sortOrder}
                 </span>
-                <span className="text-xs text-muted-foreground text-right md:ml-4">
+                <span className="text-xs text-muted-foreground text-right md:ml-4 animate-pulse delay-300">
                   <span className="hidden sm:inline">Tip:</span> Try searching for topics like <span className="font-semibold">"music charts"</span>,{" "}
                   <span className="font-semibold">"football news"</span>, or <span className="font-semibold">"election 2024"</span> and switching region/sort filters!
                 </span>
